@@ -26,7 +26,12 @@
         "prettier": "prettier -c .",
         "prettier:fix": "prettier -w .",
         "precommit": "lint-staged",
-        "commit": "cz"
+        "commit": "cz",
+        "bump:patch": "lerna version patch --no-private",
+        "bump:minor": "lerna version minor --no-private",
+        "bump:major": "lerna version major --no-privates",
+        "publish": "lerna publish from-package --no-private",
+        "version": "yarn install && git stage yarn.lock"
     },
     "devDependencies": {
         "@babel/core": "^7.20.2",
