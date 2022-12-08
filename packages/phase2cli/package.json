@@ -13,7 +13,7 @@
     },
     "types": "dist/types/src/index.d.ts",
     "engines": {
-        "node": "16"
+        "node": ">=16.14.0"
     },
     "files": [
         "dist/",
@@ -37,7 +37,6 @@
     "scripts": {
         "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript",
         "build:watch": "rollup -c rollup.config.ts -w --configPlugin typescript",
-        "pre:publish": "yarn build",
         "start": "node ./dist/src/index.node.mjs",
         "auth": "yarn start auth",
         "contribute": "yarn start contribute",
