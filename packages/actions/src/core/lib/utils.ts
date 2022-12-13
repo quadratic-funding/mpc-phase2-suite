@@ -2,6 +2,7 @@ import open from "open"
 // import clipboard from "clipboardy" // TODO: need a substitute.
 import { Verification } from "@octokit/auth-oauth-device/dist-types/types"
 import { OAuthCredential, GithubAuthProvider } from "firebase/auth"
+import { FirebaseDocumentInfo } from "types"
 
 /**
  * @dev TODO: needs refactoring.
@@ -61,3 +62,22 @@ export const onVerification = async (verification: Verification): Promise<void> 
  */
 export const exchangeGithubTokenForFirebaseCredentials = (token: string): OAuthCredential =>
     GithubAuthProvider.credential(token)
+
+
+    /**
+ * Return the next circuit where the participant needs to compute or has computed the contribution.
+ * @param circuits <Array<FirebaseDocumentInfo>> - the ceremony circuits document.
+ * @param nextCircuitPosition <number> - the position in the sequence of circuits where the next contribution must be done.
+ * @returns <FirebaseDocumentInfo>
+ */
+export const getNextCircuitForContribution = (
+    circuits: Array<FirebaseDocumentInfo>,
+    nextCircuitPosition: number
+): FirebaseDocumentInfo[] => {
+    // Filter for sequence position (should match contribution progress).
+    const filteredCircuits = circuits.filter(
+        (circuit: FirebaseDocumentInfo) => circuit.data.sequencePosition === nextCircuitPosition
+    )
+
+    return filteredCircuits
+}

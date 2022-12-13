@@ -1,6 +1,6 @@
 import { DocumentData, DocumentSnapshot, Firestore, onSnapshot } from "firebase/firestore"
 import { Functions, HttpsCallable, httpsCallable } from "firebase/functions"
-import { getCeremonyCircuits } from "@zkmpc/actions"
+import { getCeremonyCircuits, getNextCircuitForContribution } from "@zkmpc/actions"
 import { FirebaseDocumentInfo, ParticipantContributionStep, ParticipantStatus } from "../../types/index"
 import { collections, emojis, symbols, theme } from "./constants"
 import { getCurrentContributorContribution } from "./queries"
@@ -10,7 +10,6 @@ import {
     formatZkeyIndex,
     generatePublicAttestation,
     getContributorContributionsVerificationResults,
-    getNextCircuitForContribution,
     getParticipantCurrentDiskAvailableSpace,
     getSecondsMinutesHoursFromMillis,
     handleTimedoutMessageForContributor,
@@ -360,7 +359,9 @@ export default async (
                 contributionProgress === 0
             ) {
                 // Get next circuit.
-                const nextCircuit = getNextCircuitForContribution(circuits, contributionProgress + 1)
+                const nextCircuitArr = getNextCircuitForContribution(circuits, contributionProgress + 1)
+                if (nextCircuitArr.length != 1)  showError(GENERIC_ERRORS.GENERIC_ERROR_RETRIEVING_DATA, true)
+                const nextCircuit = nextCircuitArr.at(1)
 
                 // Check disk space requirements for participant.
                 const makeProgressToNextContribution = httpsCallable(
@@ -495,6 +496,7 @@ export default async (
 
                     // Return true and false based on contribution verification.
                     const contributionsValidity = await getContributorContributionsVerificationResults(
+                        firestoreDatabase,
                         ceremony.id,
                         participantDoc.id,
                         updatedCircuits,
@@ -543,6 +545,7 @@ export default async (
                     if (wannaGenerateAttestation) {
                         // Generate attestation with valid contributions.
                         await generatePublicAttestation(
+                            firestoreDatabase,
                             ceremony,
                             participantId,
                             newParticipantData!,
@@ -578,6 +581,7 @@ export default async (
                     contributions.length === numberOfCircuits
                 ) {
                     await generatePublicAttestation(
+                        firestoreDatabase,
                         ceremony,
                         participantId,
                         newParticipantData!,

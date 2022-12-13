@@ -1,5 +1,5 @@
 import { request } from "@octokit/request"
-import { DocumentData, Timestamp } from "firebase/firestore"
+import { DocumentData, Firestore, Timestamp } from "firebase/firestore"
 import ora, { Ora } from "ora"
 import figlet from "figlet"
 import clear from "clear"
@@ -31,7 +31,9 @@ import {
     openMultiPartUpload,
     uploadParts
 } from "./storage"
-import { getAllCeremonies, getCurrentActiveParticipantTimeout, getCurrentContributorContribution } from "./queries"
+import { getAllCeremonies, getCurrentActiveParticipantTimeout } from "./queries"
+import { getCurrentContributorContribution } from "packages/actions/src/helpers/query"
+import { getBucketName } from '@zkmpc/actions'
 
 dotenv.config()
 
@@ -78,6 +80,7 @@ export const getParticipantCurrentDiskAvailableSpace = (): number => {
  * @returns <Promise<Array<boolean>>>
  */
 export const getContributorContributionsVerificationResults = async (
+    firestore: Firestore,
     ceremonyId: string,
     participantId: string,
     circuits: Array<FirebaseDocumentInfo>,
@@ -89,7 +92,7 @@ export const getContributorContributionsVerificationResults = async (
     // Retrieve valid/invalid contributions.
     for await (const circuit of circuits) {
         // Get contributions to circuit from contributor.
-        const contributionsToCircuit = await getCurrentContributorContribution(ceremonyId, circuit.id, participantId)
+        const contributionsToCircuit = await getCurrentContributorContribution(firestore, ceremonyId, circuit.id, participantId)
 
         let contribution: FirebaseDocumentInfo
 
@@ -285,17 +288,6 @@ export const simpleLoader = async (
 
     if (afterLoadingText) loader.succeed(afterLoadingText)
     else loader.stop()
-}
-
-/**
- * Return the bucket name based on ceremony prefix.
- * @param ceremonyPrefix <string> - the ceremony prefix.
- * @returns <string>
- */
-export const getBucketName = (ceremonyPrefix: string): string => {
-    if (!process.env.CONFIG_CEREMONY_BUCKET_POSTFIX) showError(GENERIC_ERRORS.GENERIC_NOT_CONFIGURED_PROPERLY, true)
-
-    return `${ceremonyPrefix}${process.env.CONFIG_CEREMONY_BUCKET_POSTFIX!}`
 }
 
 /**
@@ -779,6 +771,7 @@ export const getNextCircuitForContribution = (
  * @param ghToken <string> - the Github access token of the contributor.
  */
 export const generatePublicAttestation = async (
+    firestore: Firestore,
     ceremonyDoc: FirebaseDocumentInfo,
     participantId: string,
     participantData: DocumentData,
@@ -791,6 +784,7 @@ export const generatePublicAttestation = async (
 
     // Return true and false based on contribution verification.
     const contributionsValidity = await getContributorContributionsVerificationResults(
+        firestore,
         ceremonyDoc.id,
         participantId,
         circuits,
