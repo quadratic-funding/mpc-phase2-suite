@@ -24,7 +24,6 @@ import {
     estimatePoT,
     extractPoTFromFilename,
     extractPrefix,
-    getBucketName,
     getCircuitMetadataFromR1csFile,
     multiPartUpload,
     simpleLoader,
@@ -52,6 +51,7 @@ import {
 import { CeremonyTimeoutType, Circuit, CircuitFiles, CircuitInputData, CircuitTimings } from "../../types/index"
 import { GENERIC_ERRORS, showError } from "../lib/errors"
 import { createS3Bucket, objectExist } from "../lib/storage"
+import { getBucketName } from "@zkmpc/actions"
 
 /**
  * Return the files from the current working directory which have the extension specified as input.
