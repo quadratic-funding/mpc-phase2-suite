@@ -1,7 +1,7 @@
 import { Functions, httpsCallable } from "firebase/functions";
 import dotenv from "dotenv"
 
-dotenv.config({ path: `${__dirname}/../../.env.test}`})
+dotenv.config({ path: `../../.env.test}`})
 
 
 /**

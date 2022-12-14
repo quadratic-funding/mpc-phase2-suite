@@ -11,7 +11,7 @@ export {
     makeProgressToNextContribution,
     resumeContributionAfterTimeoutExpiration
 } from "./core/contribute/index"
-export { getDocumentById } from './helpers/query'
+export { getDocumentById, getCurrentContributorContribution } from './helpers/query'
 export { 
     getContributorContributionsVerificationResults, 
     getNextCircuitForContribution, 
