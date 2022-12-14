@@ -3,6 +3,18 @@ export {
     getNewOAuthTokenUsingGithubDeviceFlow,
     signInToFirebaseWithGithubToken
 } from "./core/auth/index"
-export { checkParticipantForCeremony, getOpenedCeremonies, getCeremonyCircuits } from "./core/contribute/index"
+export { 
+    checkParticipantForCeremony, 
+    getOpenedCeremonies, 
+    getCeremonyCircuits, 
+    getValidContributionAttestation,
+    makeProgressToNextContribution,
+    resumeContributionAfterTimeoutExpiration
+} from "./core/contribute/index"
 export { getDocumentById } from './helpers/query'
-export { getNextCircuitForContribution } from './core/lib/utils'
+export { 
+    getContributorContributionsVerificationResults, 
+    getNextCircuitForContribution, 
+    getParticipantPositionInQueue 
+} from './core/lib/utils'
+export { generateGetObjectPreSignedUrl } from './helpers/storage'

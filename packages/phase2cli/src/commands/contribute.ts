@@ -2,6 +2,7 @@
 
 import { 
     checkParticipantForCeremony, 
+    getContributorContributionsVerificationResults,
     getDocumentById,
     getCeremonyCircuits,
     getOpenedCeremonies 
@@ -14,7 +15,6 @@ import {
     bootstrapCommandExec,
     terminate,
     handleTimedoutMessageForContributor,
-    getContributorContributionsVerificationResults,
     customSpinner,
     simpleLoader
 } from "../lib/utils"
@@ -55,10 +55,9 @@ const contribute = async () => {
         spinner.start()
 
         // Call Cloud Function for participant check and registration.
-        const { data: canParticipate } = await checkParticipantForCeremony(firebaseFunctions, ceremony.id)
+        const canParticipate = await checkParticipantForCeremony(firebaseFunctions, ceremony.id)
 
         // Get participant document.
-        // To be moved (maybe helpers folder? w/ query?)
         const participantDoc = await getDocumentById(
             firestoreDatabase,
             `${collections.ceremonies}/${ceremony.id}/${collections.participants}`,

@@ -79,6 +79,7 @@ export const getDocumentById = async (
 
 /**
  * Query for contribution from given participant for a given circuit (if any).
+ * @param firestore <Firestore> - the Firestore DB
  * @param ceremonyId <string> - the identifier of the ceremony.
  * @param circuitId <string> - the identifier of the circuit.
  * @param participantId <string> - the identifier of the participant.

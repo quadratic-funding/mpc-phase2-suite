@@ -1,4 +1,4 @@
-import { HttpsCallable } from "firebase/functions"
+import { Functions, HttpsCallable } from "firebase/functions"
 import fs from "fs"
 import fetch from "@adobe/node-fetch-retry"
 import { createWriteStream } from "node:fs"
@@ -8,6 +8,7 @@ import { SingleBar, Presets } from "cli-progress"
 import { ChunkWithUrl, ETagWithPartNumber, ProgressBarType } from "../../types/index"
 import { GENERIC_ERRORS, showError } from "./errors"
 import { emojis, theme } from "./constants"
+import { generateGetObjectPreSignedUrl } from "@zkmpc/actions"
 
 dotenv.config()
 
@@ -266,16 +267,17 @@ export const closeMultiPartUpload = async (
  * @return <Promise<void>>
  */
 export const downloadLocalFileFromBucket = async (
-    cf: HttpsCallable<unknown, unknown>,
+    functions: Functions,
     bucketName: string,
     objectKey: string,
     localPath: string
 ): Promise<void> => {
     // Call generateGetObjectPreSignedUrl() Cloud Function.
-    const response: any = await cf({
+    const response: any = await generateGetObjectPreSignedUrl(
+        functions, 
         bucketName,
         objectKey
-    })
+    )
 
     // Get the pre-signed url.
     const preSignedUrl = response.data

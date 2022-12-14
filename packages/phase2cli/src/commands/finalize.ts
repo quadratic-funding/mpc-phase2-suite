@@ -2,7 +2,11 @@
 import crypto from "crypto"
 import { zKey } from "snarkjs"
 import open from "open"
-import { getCeremonyCircuits } from "@zkmpc/actions"
+import { 
+    getBucketName,
+    getCeremonyCircuits,
+    getValidContributionAttestation
+ } from "@zkmpc/actions"
 import { httpsCallable } from "firebase/functions"
 import { handleCurrentAuthUserSignIn, onlyCoordinator } from "../lib/auth"
 import { collections, emojis, paths, solidityVersion, symbols, theme } from "../lib/constants"
@@ -19,9 +23,7 @@ import { getClosedCeremonies } from "../lib/queries"
 import {
     bootstrapCommandExec,
     customSpinner,
-    getBucketName,
     getContributorContributionsVerificationResults,
-    getValidContributionAttestation,
     makeContribution,
     multiPartUpload,
     publishGist,

@@ -3,6 +3,8 @@ import open from "open"
 import { Verification } from "@octokit/auth-oauth-device/dist-types/types"
 import { OAuthCredential, GithubAuthProvider } from "firebase/auth"
 import { FirebaseDocumentInfo } from "types"
+import { Firestore } from "firebase/firestore"
+import { getCurrentContributorContribution } from "src/helpers/query"
 
 /**
  * @dev TODO: needs refactoring.
@@ -80,4 +82,61 @@ export const getNextCircuitForContribution = (
     )
 
     return filteredCircuits
+}
+
+/**
+ * Return the index of a given participant in a circuit waiting queue.
+ * @param contributors <Array<string>> - the list of the contributors in queue for a circuit.
+ * @param participantId <string> - the unique identifier of the participant.
+ * @returns <number>
+ */
+export const getParticipantPositionInQueue = (contributors: Array<string>, participantId: string): number =>
+    contributors.indexOf(participantId) + 1
+
+
+/**
+ * Return an array of true of false based on contribution verification result per each circuit.
+ * @param ceremonyId <string> - the unique identifier of the ceremony.
+ * @param participantId <string> - the unique identifier of the contributor.
+ * @param circuits <Array<FirebaseDocumentInfo>> - the Firestore documents of the ceremony circuits.
+ * @param finalize <boolean> - true when finalizing; otherwise false.
+ * @returns <Promise<Array<boolean>>>
+ */
+export const getContributorContributionsVerificationResults = async (
+    firestore: Firestore,
+    ceremonyId: string,
+    participantId: string,
+    circuits: Array<FirebaseDocumentInfo>,
+    finalize: boolean
+): Promise<Array<boolean>> => {
+    // Keep track contributions verification results.
+    const contributions: Array<boolean> = []
+
+    // Retrieve valid/invalid contributions.
+    for await (const circuit of circuits) {
+        // Get contributions to circuit from contributor.
+        const contributionsToCircuit = await getCurrentContributorContribution(firestore, ceremonyId, circuit.id, participantId)
+
+        let contribution: FirebaseDocumentInfo
+
+        if (finalize)
+            // There should be two contributions from coordinator (one is finalization).
+            contribution = contributionsToCircuit
+                .filter((contrib: FirebaseDocumentInfo) => contrib.data.zkeyIndex === "final")
+                .at(0)!
+        // There will be only one contribution.
+        else contribution = contributionsToCircuit.at(0)!
+
+        if (contribution) {
+            // Get data.
+            const contributionData = contribution.data
+
+            if (!contributionData) throw new Error('Something went wrong when retrieving the data from the database')
+
+            // Update contributions validity.
+            contributions.push(!!contributionData?.valid)
+        }
+    }
+
+    return contributions
 }

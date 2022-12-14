@@ -33,7 +33,10 @@ import {
 } from "./storage"
 import { getAllCeremonies, getCurrentActiveParticipantTimeout } from "./queries"
 import { getCurrentContributorContribution } from "packages/actions/src/helpers/query"
-import { getBucketName } from '@zkmpc/actions'
+import { 
+    getBucketName,
+    getValidContributionAttestation
+ } from '@zkmpc/actions'
 
 dotenv.config()
 
@@ -118,64 +121,6 @@ export const getContributorContributionsVerificationResults = async (
     return contributions
 }
 
-/**
- * Return the attestation made only from valid contributions.
- * @param contributionsValidities Array<boolean> - an array of booleans (true when contribution is valid; otherwise false).
- * @param circuits <Array<FirebaseDocumentInfo>> - the Firestore documents of the ceremony circuits.
- * @param participantData <DocumentData> - the document data of the participant.
- * @param ceremonyId <string> - the unique identifier of the ceremony.
- * @param participantId <string> - the unique identifier of the contributor.
- * @param attestationPreamble <string> - the preamble of the attestation.
- * @param finalize <boolean> - true only when finalizing, otherwise false.
- * @returns <Promise<string>> - the complete attestation string.
- */
-export const getValidContributionAttestation = async (
-    contributionsValidities: Array<boolean>,
-    circuits: Array<FirebaseDocumentInfo>,
-    participantData: DocumentData,
-    ceremonyId: string,
-    participantId: string,
-    attestationPreamble: string,
-    finalize: boolean
-): Promise<string> => {
-    let attestation = attestationPreamble
-
-    // For each contribution validity.
-    for (let idx = 0; idx < contributionsValidities.length; idx += 1) {
-        if (contributionsValidities[idx]) {
-            // Extract data from circuit.
-            const circuit = circuits[idx]
-
-            let contributionHash: string = ""
-
-            // Get the contribution hash.
-            if (finalize) {
-                const numberOfContributions = participantData.contributions.length
-                contributionHash = participantData.contributions[numberOfContributions / 2 + idx].hash
-            } else contributionHash = participantData.contributions[idx].hash
-
-            // Get the contribution data.
-            const contributions = await getCurrentContributorContribution(ceremonyId, circuit.id, participantId)
-
-            let contributionData: DocumentData
-
-            if (finalize)
-                contributionData = contributions.filter(
-                    (contribution: FirebaseDocumentInfo) => contribution.data.zkeyIndex === "final"
-                )[0].data!
-            else contributionData = contributions.at(0)?.data!
-
-            // Attestate.
-            attestation = `${attestation}\n\nCircuit # ${circuit.data.sequencePosition} (${
-                circuit.data.prefix
-            })\nContributor # ${
-                contributionData?.zkeyIndex > 0 ? Number(contributionData?.zkeyIndex) : contributionData?.zkeyIndex
-            }\n${contributionHash}`
-        }
-    }
-
-    return attestation
-}
 
 /**
  * Publish a new attestation through a Github Gist.
@@ -817,6 +762,7 @@ export const generatePublicAttestation = async (
 
     // Get only valid contribution hashes.
     const attestation = await getValidContributionAttestation(
+        firestore,
         contributionsValidity,
         circuits,
         participantData!,
@@ -859,7 +805,7 @@ export const generatePublicAttestation = async (
  * @param showSpinner <boolean> - true to show a custom spinner on the terminal; otherwise false.
  */
 export const downloadContribution = async (
-    cf: HttpsCallable<unknown, unknown>,
+    functions: Functions,
     bucketName: string,
     objectKey: string,
     localPath: string,
@@ -871,7 +817,7 @@ export const downloadContribution = async (
     if (showSpinner) spinner.start()
 
     // Download from storage.
-    await downloadLocalFileFromBucket(cf, bucketName, objectKey, localPath)
+    await downloadLocalFileFromBucket(functions, bucketName, objectKey, localPath)
 
     if (showSpinner) spinner.stop()
 }
@@ -1026,7 +972,7 @@ export const makeContribution = async (
 
         spinner.stop()
 
-        await downloadContribution(generateGetObjectPreSignedUrl, bucketName, storagePath, localPath, false)
+        await downloadContribution(firebaseFunctions, bucketName, storagePath, localPath, false)
 
         console.log(`${symbols.success} Contribution ${theme.bold(`#${currentZkeyIndex}`)} correctly downloaded`)
 
