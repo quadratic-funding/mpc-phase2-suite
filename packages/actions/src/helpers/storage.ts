@@ -1,4 +1,8 @@
 import { Functions, httpsCallable } from "firebase/functions";
+import dotenv from "dotenv"
+
+dotenv.config({ path: `${__dirname}/../../.env.test}`})
+
 
 /**
  * Generates a pre-signed URL for a S3 download
@@ -14,4 +18,15 @@ export const generateGetObjectPreSignedUrl = async (
 ): Promise<any> => {
     const cf = httpsCallable(functions, 'generateGetObjectPreSignedUrl')
     return await cf({ bucketName, objectKey })
+}
+
+/**
+ * Return the bucket name based on ceremony prefix.
+ * @param ceremonyPrefix <string> - the ceremony prefix.
+ * @returns <string>
+ */
+export const getBucketName = (ceremonyPrefix: string): string => {
+    if (!process.env.CONFIG_CEREMONY_BUCKET_POSTFIX) throw new Error('Storage-001: Check that all CONFIG environment variables are configured properly')
+
+    return `${ceremonyPrefix}${process.env.CONFIG_CEREMONY_BUCKET_POSTFIX!}`
 }

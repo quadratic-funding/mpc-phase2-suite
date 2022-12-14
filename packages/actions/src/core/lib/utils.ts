@@ -2,9 +2,9 @@ import open from "open"
 // import clipboard from "clipboardy" // TODO: need a substitute.
 import { Verification } from "@octokit/auth-oauth-device/dist-types/types"
 import { OAuthCredential, GithubAuthProvider } from "firebase/auth"
-import { FirebaseDocumentInfo } from "types"
+import { FirebaseDocumentInfo } from "../../../types"
 import { Firestore } from "firebase/firestore"
-import { getCurrentContributorContribution } from "src/helpers/query"
+import { getCurrentContributorContribution } from "../../helpers/query"
 
 /**
  * @dev TODO: needs refactoring.
@@ -96,6 +96,7 @@ export const getParticipantPositionInQueue = (contributors: Array<string>, parti
 
 /**
  * Return an array of true of false based on contribution verification result per each circuit.
+ * @param firestore <Firestore> - the Firestore db
  * @param ceremonyId <string> - the unique identifier of the ceremony.
  * @param participantId <string> - the unique identifier of the contributor.
  * @param circuits <Array<FirebaseDocumentInfo>> - the Firestore documents of the ceremony circuits.

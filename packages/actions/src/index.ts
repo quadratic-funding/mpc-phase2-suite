@@ -17,4 +17,7 @@ export {
     getNextCircuitForContribution, 
     getParticipantPositionInQueue 
 } from './core/lib/utils'
-export { generateGetObjectPreSignedUrl } from './helpers/storage'
+export { 
+    getBucketName,
+    generateGetObjectPreSignedUrl
+ } from './helpers/storage'

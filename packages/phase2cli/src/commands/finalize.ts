@@ -217,6 +217,7 @@ const finalize = async () => {
 
         // Return true and false based on contribution verification.
         const contributionsValidity = await getContributorContributionsVerificationResults(
+            firestoreDatabase,
             ceremony.id,
             participantDoc.id,
             circuits,

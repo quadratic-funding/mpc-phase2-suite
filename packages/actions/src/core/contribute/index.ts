@@ -1,5 +1,10 @@
 import { DocumentData, Firestore, where } from "firebase/firestore"
-import { CeremonyCollectionField, CeremonyState, Collections, FirebaseDocumentInfo } from "../../../types/index"
+import { 
+    CeremonyCollectionField, 
+    CeremonyState,
+    Collections, 
+    FirebaseDocumentInfo 
+} from "../../../types/index"
 import { 
     getCurrentContributorContribution,
     queryCollection, 
@@ -41,8 +46,8 @@ export const getCeremonyCircuits = async (
 
 /**
  * Calls the cloud function checkParticipantForCeremony
- * @param functions <Functions> - The Firebase functions
- * @param ceremonyId <string> - The ceremony ID for which to query participants
+ * @param functions <Functions> - the Firebase functions
+ * @param ceremonyId <string> - the ceremony ID for which to query participants
  * @returns 
  */
 export const checkParticipantForCeremony = async (
@@ -55,8 +60,8 @@ export const checkParticipantForCeremony = async (
 
 /**
  * Calls the cloud function makeProgressToNextContribution
- * @param functions <Functions> - The Firebase functions
- * @param ceremonyId <string> - The ceremony ID in use
+ * @param functions <Functions> - the Firebase functions
+ * @param ceremonyId <string> - the ceremony ID in use
  */
 export const makeProgressToNextContribution = async (
     functions: Functions, 
@@ -66,6 +71,12 @@ export const makeProgressToNextContribution = async (
     return await cf({ ceremonyId })
 }
 
+/**
+ * Calls the cloud function resumeContributionAfterTimeoutExpiration
+ * @param functions <Functions> - the Firebase functions
+ * @param ceremonyId <string> - the ceremony ID for which to resume
+ * @returns 
+ */
 export const resumeContributionAfterTimeoutExpiration = async (
     functions: Functions,
     ceremonyId: string
