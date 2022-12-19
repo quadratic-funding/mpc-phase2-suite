@@ -2,7 +2,7 @@
 
 import { emojis, paths, symbols, theme } from "../lib/constants"
 import { showError } from "../lib/errors"
-import { deleteDir, directoryExists } from "../lib/files"
+import { deleteDir, directoryExists } from "@zkmpc/actions"
 import { askForConfirmation } from "../lib/prompts"
 import { bootstrapCommandExec, customSpinner, sleep } from "../lib/utils"
 

@@ -48,3 +48,7 @@ export {
     extractPrefix,
     formatZkeyIndex
 } from './core/lib/utils'
+export {
+    deleteDir,
+    directoryExists
+} from './core/clean'
