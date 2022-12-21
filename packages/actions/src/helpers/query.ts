@@ -13,8 +13,8 @@ import {
     Timestamp,
     where
 } from "firebase/firestore"
-import { FirebaseDocumentInfo } from "../../types/index"
-import { collections, contributionsCollectionFields, timeoutsCollectionFields } from "./constants"
+import { CeremonyState, FirebaseDocumentInfo } from "../../types/index"
+import { ceremoniesCollectionFields, collections, contributionsCollectionFields, timeoutsCollectionFields } from "./constants"
 
 /**
  * Helper for query a collection based on certain constraints.
@@ -121,4 +121,29 @@ export const getCurrentActiveParticipantTimeout = async (
     )
 
     return fromQueryToFirebaseDocumentInfo(participantTimeoutQuerySnap.docs)
+}
+
+/**
+ * Query for closed ceremonies documents and return their data (if any).
+ * @param firestoreDatabase <Firestore> - the Firestore database to query.
+ * @returns <Promise<Array<FirebaseDocumentInfo>>>
+ */
+export const getClosedCeremonies = async (firestoreDatabase: Firestore): Promise<Array<FirebaseDocumentInfo>> => {
+    let closedStateCeremoniesQuerySnap: any
+
+    try {
+        closedStateCeremoniesQuerySnap = await queryCollection(
+            firestoreDatabase,
+            collections.ceremonies, [
+            where(ceremoniesCollectionFields.state, "==", CeremonyState.CLOSED),
+            where(ceremoniesCollectionFields.endDate, "<=", Date.now())
+        ])
+
+        if (closedStateCeremoniesQuerySnap.empty && closedStateCeremoniesQuerySnap.size === 0)
+            throw new Error("Queries-0001: There are no ceremonies ready to finalization")
+    } catch (err: any) {
+        throw new Error(err.toString())
+    }
+
+    return fromQueryToFirebaseDocumentInfo(closedStateCeremoniesQuerySnap.docs)
 }

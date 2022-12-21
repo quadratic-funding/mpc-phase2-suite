@@ -37,7 +37,8 @@ export {
 export { 
     getCurrentContributorContribution,
     getDocumentById,
-    getCurrentActiveParticipantTimeout
+    getCurrentActiveParticipantTimeout,
+    getClosedCeremonies
 } from './helpers/query'
 export {
     getContributorContributionsVerificationResults,
@@ -48,3 +49,7 @@ export {
     extractPrefix,
     formatZkeyIndex
 } from './core/lib/utils'
+export {
+    checkAndPrepareCoordinatorForFinalization,
+    finalizeLastContribution
+} from './core/finalize'
