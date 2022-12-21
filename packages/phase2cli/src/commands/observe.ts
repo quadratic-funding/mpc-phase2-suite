@@ -2,7 +2,11 @@
 
 import readline from "readline"
 import logSymbols from "log-symbols"
-import { getOpenedCeremonies, getCeremonyCircuits } from "@zkmpc/actions"
+import { 
+    getCurrentContributorContribution,
+    getOpenedCeremonies, 
+    getCeremonyCircuits 
+} from "@zkmpc/actions"
 import { FirebaseDocumentInfo } from "../../types/index"
 import { onlyCoordinator, handleCurrentAuthUserSignIn } from "../lib/auth"
 import {
@@ -13,9 +17,9 @@ import {
     sleep
 } from "../lib/utils"
 import { askForCeremonySelection } from "../lib/prompts"
-import { getCurrentContributorContribution } from "../lib/queries"
 import { GENERIC_ERRORS, showError } from "../lib/errors"
 import { theme, emojis, symbols, observationWaitingTimeInMillis } from "../lib/constants"
+import { Firestore } from "firebase/firestore"
 
 /**
  * Clean cursor lines from current position back to root (default: zero).
@@ -37,11 +41,13 @@ const cleanCursorPosBackToRoot = (currentCursorPos: number) => {
 
 /**
  * Show the latest updates for the given circuit.
+ * @param firestoreDatabase <Firestore> - the Firestore database to query from.
  * @param ceremony <FirebaseDocumentInfo> - the Firebase document containing info about the ceremony.
  * @param circuit <FirebaseDocumentInfo> - the Firebase document containing info about the circuit.
  * @returns Promise<number> return the current position of the cursor (i.e., number of lines displayed).
  */
 const displayLatestCircuitUpdates = async (
+    firestoreDatabase: Firestore,
     ceremony: FirebaseDocumentInfo,
     circuit: FirebaseDocumentInfo
 ): Promise<number> => {
@@ -59,7 +65,12 @@ const displayLatestCircuitUpdates = async (
         cursorPos -= 1
     } else {
         // Search for currentContributor' contribution.
-        const contributions = await getCurrentContributorContribution(ceremony.id, circuit.id, currentContributor)
+        const contributions = await getCurrentContributorContribution(
+            firestoreDatabase,
+            ceremony.id, 
+            circuit.id, 
+            currentContributor
+        )
 
         if (!contributions.length) {
             // The contributor is currently contributing.
@@ -163,7 +174,7 @@ const observe = async () => {
             spinner.stop()
 
             // Observe changes for each circuit
-            for await (const circuit of circuits) cursorPos += await displayLatestCircuitUpdates(ceremony, circuit)
+            for await (const circuit of circuits) cursorPos += await displayLatestCircuitUpdates(firestoreDatabase, ceremony, circuit)
 
             process.stdout.write(`Press CTRL+C to exit`)
 
