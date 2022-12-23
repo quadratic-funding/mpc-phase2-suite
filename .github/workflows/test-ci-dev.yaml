@@ -15,6 +15,18 @@ jobs:
       - name: install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Get Library Versions For Binary Caching
+        id: cache-settings
+        run: |
+          echo "::set-output name=firebase-tools::$(yarn list -s --depth=0 --pattern firebase-tools | tail -n 1 | sed 's/.*@//g')"
+          echo "::set-output name=firebase-tools::$(npm list -s --depth=0 | grep firebase-tools | tail -n 1 | sed 's/.*@//g')"
+
+      - name: Cache Firebase Emulator Binaries
+        uses: actions/cache@v2.1.2
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-${{ steps.cache-settings.outputs.firebase-tools }}
+
       - name: run test (unit & e2e)
         run: yarn test:dev
         env:
