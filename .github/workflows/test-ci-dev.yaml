@@ -1,0 +1,22 @@
+name: Run Test <Dev>
+run-name: Test Dev
+
+on:
+  pull_request:
+
+jobs:
+  unit-e2e-test:
+    name: Unit and E2E Test <Dev>
+    runs-on: ubuntu-22.04
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: run test (unit & e2e)
+        run: yarn test:ci-dev
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
