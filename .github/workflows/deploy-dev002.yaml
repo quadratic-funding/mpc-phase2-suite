@@ -17,7 +17,7 @@ jobs:
           cache: yarn
 
       - name: write env file
-        run: echo "$ENV_FILE" | base64 -d > ./packages/backend/.env
+        run: echo "${ENV_FILE// /}" | base64 --decode > ./packages/backend/.env
         env:
             ENV_FILE: ${{ secrets.ENV_FILE }}
 
