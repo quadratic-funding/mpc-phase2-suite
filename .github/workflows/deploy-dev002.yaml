@@ -1,0 +1,42 @@
+name: Deploy to dev002
+
+on:
+  push:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    # environment: dev002
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: yarn
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: write env file
+        run: echo ${{ secrets.ENV_FILE }} | base64 -d > ./packages/backend/.env
+
+
+      - name: write Firebase service account key (from secrets to json)
+        uses: jsdaniell/create-json@v1.2.1
+        with:
+          name: serviceAccountKey.json
+          json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          dir: ./packages/backend/
+
+      # Workaround for SSL error. (resource: https://github.com/firebase/firebase-admin-node/issues/1712)
+      - name: SSL Workaround
+        run: sudo sed -i '54 s/^/#/' /usr/lib/ssl/openssl.cnf
+
+      - name: deploy to Firebase
+        run: npx firebase deploy --only functions --project mpc-tool-dev002
+        working-directory: packages/backend
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ./serviceAccountKey.json
+
