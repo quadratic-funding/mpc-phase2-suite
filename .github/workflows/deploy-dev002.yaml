@@ -8,6 +8,7 @@ jobs:
     strategy:
       matrix:
         env: ["dev001", "dev002"]
+      fail-fast: false
     runs-on: ubuntu-20.04
     environment: ${{ matrix.env }}
     steps:
@@ -37,7 +38,7 @@ jobs:
         run: sudo sed -i '54 s/^/#/' /usr/lib/ssl/openssl.cnf
 
       - name: deploy to Firebase
-        run: npx firebase deploy --only functions --project mpc-tool-dev002
+        run: npx firebase deploy --only functions --project mpc-tool-${{ matrix.env }}
         working-directory: packages/backend
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ./serviceAccountKey.json
