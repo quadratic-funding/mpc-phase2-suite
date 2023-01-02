@@ -5,8 +5,11 @@ on:
 
 jobs:
   deploy:
+    strategy:
+      matrix:
+        env: ["dev001", "dev002"]
     runs-on: ubuntu-20.04
-    # environment: dev002
+    environment: ${{ matrix.env }}
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
@@ -16,10 +19,8 @@ jobs:
           node-version: 16
           cache: yarn
 
-      - name: write env file
+      - name: write env file for Firebase Functions
         run: echo "${{ secrets.ENV_FILE }}" > ./packages/backend/.env
-        env:
-            ENV_FILE:
 
       - name: install dependencies
         run: yarn install --frozen-lockfile
@@ -28,7 +29,7 @@ jobs:
         uses: jsdaniell/create-json@v1.2.1
         with:
           name: serviceAccountKey.json
-          json: ${{ secrets.SK_TEMP }}
+          json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
           dir: ./packages/backend/
 
       # Workaround for SSL error. (resource: https://github.com/firebase/firebase-admin-node/issues/1712)
