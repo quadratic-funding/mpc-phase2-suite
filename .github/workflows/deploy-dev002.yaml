@@ -16,12 +16,11 @@ jobs:
           node-version: 16
           cache: yarn
 
+      - name: write env file
+        run: echo "${{ secrets.ENV_FILE }}" | base64 -d > ./packages/backend/.env
+
       - name: install dependencies
         run: yarn install --frozen-lockfile
-
-      - name: write env file
-        run: echo "${{ secrets.ENV_FILE }}"" | base64 -d > ./packages/backend/.env
-
 
       - name: write Firebase service account key (from secrets to json)
         uses: jsdaniell/create-json@v1.2.1
