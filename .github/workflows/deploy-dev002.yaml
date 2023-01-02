@@ -28,7 +28,7 @@ jobs:
         uses: jsdaniell/create-json@v1.2.1
         with:
           name: serviceAccountKey.json
-          json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          json: ${{ secrets.SK_TEMP }}
           dir: ./packages/backend/
 
       # Workaround for SSL error. (resource: https://github.com/firebase/firebase-admin-node/issues/1712)
