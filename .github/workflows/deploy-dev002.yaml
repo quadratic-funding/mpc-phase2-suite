@@ -17,7 +17,9 @@ jobs:
           cache: yarn
 
       - name: write env file
-        run: echo "${{ secrets.ENV_FILE }}" | base64 -d > ./packages/backend/.env
+        run: echo "$ENV_FILE" | base64 -d > ./packages/backend/.env
+        env:
+            ENV_FILE: ${{ secrets.ENV_FILE }}
 
       - name: install dependencies
         run: yarn install --frozen-lockfile
