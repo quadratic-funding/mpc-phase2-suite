@@ -7,7 +7,7 @@ jobs:
   deploy:
     strategy:
       matrix:
-        env: ["dev001", "dev002"]
+        env: ["ctrlc03", "dev002"]
       fail-fast: false
     runs-on: ubuntu-20.04
     environment: ${{ matrix.env }}
