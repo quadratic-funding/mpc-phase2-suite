@@ -24,7 +24,7 @@ const config: HardhatUserConfig = {
         },
         arbitrum_testnet: {
             url: process.env.RPC_URL_ARBITRUM_TESTNET || "https://goerli-rollup.arbitrum.io/rpc",
-            accounts: [process.env.PRIV_KEY || randomPrivKey],
+            accounts: [process.env.PRIVATE_KEY || randomPrivKey],
             gas: GAS_LIMIT,
             blockGasLimit: GAS_LIMIT,
             chainId: CHAIN_IDS.arbitrumTestnet
