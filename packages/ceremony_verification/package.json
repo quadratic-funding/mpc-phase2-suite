@@ -6,7 +6,6 @@
 	"homepage": "https://github.com/quadratic-funding/mpc-phase2-suite",
 	"bugs": "https://github.com/quadratic-funding/mpc-phase2-suite/issues",
 	"scripts": {
-		"build": "yarn compile",
 		"compile": "hardhat compile",
 		"deploy": "hardhat run scripts/deploy.ts --network hardhat",
 		"test": "hardhat test test/*.ts",
