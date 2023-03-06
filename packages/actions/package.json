@@ -34,7 +34,11 @@
     "scripts": {
         "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript",
         "build:watch": "rollup -c rollup.config.ts -w --configPlugin typescript",
-        "pre:publish": "yarn build"
+        "compile": "hardhat compile",
+        "deploy": "hardhat run scripts/deploy.ts --network hardhat",
+        "pre:publish": "yarn build",
+        "test:contracts": "hardhat test test/unit/verifier.cts",
+        "verify:proof": "hardhat run scripts/verifyProof.cts"
     },
     "dependencies": {
         "@octokit/auth-oauth-device": "^4.0.3",
@@ -51,10 +55,19 @@
         "puppeteer-extra-plugin-stealth": "^2.11.1"
     },
     "devDependencies": {
-        "@types/rollup-plugin-auto-external": "^2.0.2",    
+        "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
+        "@nomicfoundation/hardhat-toolbox": "^2.0.1",
+        "@nomiclabs/hardhat-ethers": "^2.2.2",
+        "@nomiclabs/hardhat-etherscan": "^3.1.6",
+        "@typechain/ethers-v5": "^10.2.0",
+        "@typechain/hardhat": "^6.1.5",
+        "@types/rollup-plugin-auto-external": "^2.0.2",
+        "ethers": "^5.7.2",
         "rollup-plugin-auto-external": "^2.0.0",
         "rollup-plugin-cleanup": "^3.2.1",
         "rollup-plugin-typescript2": "^0.34.1",
+        "ts-node": "^10.9.1",
+        "typechain": "^8.1.1",
         "typescript": "^4.9.3",
         "winston": "^3.8.2"
     },
