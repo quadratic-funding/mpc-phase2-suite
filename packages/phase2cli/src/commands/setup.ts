@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
-import { zKey, r1cs } from "snarkjs"
+import { zKey } from "snarkjs"
 import boxen from "boxen"
 import { createWriteStream, Dirent, renameSync } from "fs"
 import {
     blake512FromPath,
     isCoordinator,
     extractPrefix,
-    commonTerms,
     potFilenameTemplate,
     genesisZkeyIndex,
     getR1csStorageFilePath,
@@ -20,8 +19,7 @@ import {
     multiPartUpload,
     checkIfObjectExist,
     setupCeremony,
-    extractCircuitMetadata,
-    createCustomLoggerForFile
+    getR1CSInfo
 } from "@zkmpc/actions/src"
 import { CeremonyTimeoutType } from "@zkmpc/actions/src/types/enums"
 import {
@@ -48,18 +46,11 @@ import {
     promptPreComputedZkey,
     promptPreComputedZkeySelector,
     promptNeededPowersForCircuit,
-    promptPotSelector,
-    promptZkeyGeneration
+    promptPotSelector
 } from "../lib/prompts"
 import { COMMAND_ERRORS, showError } from "../lib/errors"
 import { bootstrapCommandExecutionAndServices, checkAuth } from "../lib/services"
-import {
-    getCWDFilePath,
-    getMetadataLocalFilePath,
-    getPotLocalFilePath,
-    getZkeyLocalFilePath,
-    localPaths
-} from "../lib/localConfigs"
+import { getCWDFilePath, getPotLocalFilePath, getZkeyLocalFilePath, localPaths } from "../lib/localConfigs"
 import theme from "../lib/theme"
 import {
     filterDirectoryFilesByExtension,
@@ -92,21 +83,15 @@ const getInputDataToAddCircuitToCeremony = async (
     const circuitName = choosenCircuitFilename.substring(0, choosenCircuitFilename.indexOf("."))
     const circuitPrefix = extractPrefix(circuitName)
 
-    // R1CS circuit file path.
-    const r1csMetadataLocalFilePath = getMetadataLocalFilePath(
-        `${circuitPrefix}_${commonTerms.foldersAndPathsTerms.metadata}.log`
-    )
+    // R1CS file path.
     const r1csCWDFilePath = getCWDFilePath(process.cwd(), choosenCircuitFilename)
-
-    // Prepare a custom logger for R1CS metadata store (from snarkjs console to file).
-    const logger = createCustomLoggerForFile(r1csMetadataLocalFilePath)
 
     const spinner = customSpinner(`Looking for circuit metadata...`, "clock")
     spinner.start()
 
     // Read R1CS and store metadata locally.
     // @todo need to investigate the behaviour of this info() method with huge circuits (could be a pain).
-    await r1cs.info(r1csCWDFilePath, logger)
+    const metadata = getR1CSInfo(r1csCWDFilePath)
 
     await sleep(2000) // Sleep 2s to avoid unexpected termination (file descriptor close).
 
@@ -115,6 +100,7 @@ const getInputDataToAddCircuitToCeremony = async (
     // Return updated data.
     return {
         ...circuitInputData,
+        metadata,
         compiler: {
             commitHash:
                 !circuitInputData.compiler.commitHash && sameCircomCompiler
@@ -142,7 +128,7 @@ const handleAdditionOfCircuitsToCeremony = async (
     ceremonyTimeoutMechanismType: CeremonyTimeoutType
 ): Promise<Array<CircuitInputData>> => {
     // Prepare data.
-    const circuitsInputData: Array<CircuitInputData> = [] // All circuits interactive data.
+    const inputDataForCircuits: Array<CircuitInputData> = [] // All circuits interactive data.
     let circuitSequencePosition = 1 // The circuit's position for contribution.
     let readyToSummarizeCeremony = false // Boolean flag to check whether the coordinator has finished to add circuits to the ceremony.
     let wannaAddAnotherCircuit = true // Loop flag.
@@ -180,7 +166,7 @@ const handleAdditionOfCircuitsToCeremony = async (
         )
 
         // Store circuit data.
-        circuitsInputData.push(circuitInputData)
+        inputDataForCircuits.push(circuitInputData)
 
         // Check if any circuit is left for potentially addition to ceremony.
         if (options.length !== 0) {
@@ -195,7 +181,7 @@ const handleAdditionOfCircuitsToCeremony = async (
         if (readyToSummarizeCeremony) wannaAddAnotherCircuit = false
     }
 
-    return circuitsInputData
+    return inputDataForCircuits
 }
 
 /**
@@ -356,48 +342,6 @@ const handlePreComputedZkeyPowersOfTauSelection = async (
 }
 
 /**
- * Handle the verification task for a pre-computed zKey.
- * @notice if the pre-computed zKey is invalid, the method prompts to the coordinator the generation for another zKey
- * from scratch. If not, the command will gracefully exit.
- * @dev this check is necessary to avoid to upload a wrong combination of R1CS, PoT and pre-computed zKey file.
- * @param r1csLocalPathAndFileName <string> - the local complete path of the R1CS selected file.
- * @param potLocalPathAndFileName <string> - the local complete path of the PoT selected file.
- * @param zkeyLocalPathAndFileName <string> - the local complete path of the pre-computed zKey selected file.
- * @returns <Promise<boolean>> - the validity of the pre-computed zKey.
- */
-const handlePreComputedZkeyVerification = async (
-    r1csLocalPathAndFileName: string,
-    potLocalPathAndFileName: string,
-    zkeyLocalPathAndFileName: string
-): Promise<boolean> => {
-    console.log(
-        `${theme.symbols.info} Checking the pre-computed zKey locally on your machine (to avoid any R1CS, PoT, zKey combination errors)`
-    )
-
-    // Verify validity of pre-computed zKey (R1CS and PoT are implicitly verified).
-    const valid = await zKey.verifyFromR1cs(
-        r1csLocalPathAndFileName,
-        potLocalPathAndFileName,
-        zkeyLocalPathAndFileName,
-        console
-    )
-
-    await sleep(3000) // workaround for unexpected file descriptor close.
-
-    if (valid) console.log(`${theme.symbols.success} The provided pre-computed zKey has passed validation check`)
-    else {
-        console.log(`${theme.symbols.error} The provided pre-computed zKey is invalid!`)
-
-        // Prompt to generate a new zKey from scratch.
-        const newZkeyGeneration = await promptZkeyGeneration()
-
-        if (!newZkeyGeneration) showError(COMMAND_ERRORS.COMMAND_SETUP_ABORT, true)
-    }
-
-    return valid
-}
-
-/**
  * Generate a brand new zKey from scratch.
  * @param r1csLocalPathAndFileName <string> - the local complete path of the R1CS selected file.
  * @param potLocalPathAndFileName <string> - the local complete path of the PoT selected file.
@@ -518,7 +462,6 @@ const setup = async () => {
     checkAndMakeNewDirectoryIfNonexistent(localPaths.output)
     cleanDir(localPaths.setup)
     cleanDir(localPaths.pot)
-    cleanDir(localPaths.metadata)
     cleanDir(localPaths.zkeys)
 
     // Prompt the coordinator for gather ceremony input data.
@@ -531,25 +474,8 @@ const setup = async () => {
         ceremonyInputData.timeoutMechanismType
     )
 
-    const spinner = customSpinner(`Summarizing your ceremony...`, "clock")
-    spinner.start()
-
-    // Extract circuits metadata.
-    for (const circuitInputData of circuitsInputData) {
-        // Read file which contains the circuit metadata.
-        const r1csMetadataFilePath = getMetadataLocalFilePath(
-            `${circuitInputData.prefix}_${commonTerms.foldersAndPathsTerms.metadata}.log`
-        )
-
-        const circuitMetadata = extractCircuitMetadata(r1csMetadataFilePath)
-
-        circuits.push({
-            ...circuitInputData,
-            metadata: circuitMetadata
-        })
-    }
-
-    spinner.stop()
+    // Move input data to circuits.
+    circuitsInputData.forEach((data: CircuitInputData) => circuits.push(data))
 
     // Display ceremony summary.
     displayCeremonySummary(ceremonyInputData, circuits)
@@ -634,27 +560,17 @@ const setup = async () => {
                             smallestPowersOfTauCompleteFilenameForCircuit
                         )
 
-                    // Check if the pre-computed zKey (in combination w/ PoT + R1CS files) is valid.
-                    const isPreComputedZkeyValid = await handlePreComputedZkeyVerification(
-                        r1csLocalPathAndFileName,
-                        potLocalPathAndFileName,
-                        zkeyLocalPathAndFileName
-                    )
-
                     // Update flag for zKey generation accordingly.
-                    wannaGenerateNewZkey = !isPreComputedZkeyValid
+                    wannaGenerateNewZkey = false
 
-                    // If pre-computed zKey + combination of R1CS and PoT are valid.
-                    if (isPreComputedZkeyValid) {
-                        // Update paths.
-                        renameSync(getCWDFilePath(cwd, preComputedZkeyCompleteFilename), firstZkeyCompleteFilename) // the pre-computed zKey become the new first (genesis) zKey.
-                        zkeyLocalPathAndFileName = getCWDFilePath(cwd, firstZkeyCompleteFilename)
+                    // Update paths.
+                    renameSync(getCWDFilePath(cwd, preComputedZkeyCompleteFilename), firstZkeyCompleteFilename) // the pre-computed zKey become the new first (genesis) zKey.
+                    zkeyLocalPathAndFileName = getCWDFilePath(cwd, firstZkeyCompleteFilename)
 
-                        // Remove the pre-computed zKey from the list of possible pre-computed options.
-                        leftPreComputedZkeys = leftPreComputedZkeys.filter(
-                            (dirent: Dirent) => dirent.name !== preComputedZkeyCompleteFilename
-                        )
-                    }
+                    // Remove the pre-computed zKey from the list of possible pre-computed options.
+                    leftPreComputedZkeys = leftPreComputedZkeys.filter(
+                        (dirent: Dirent) => dirent.name !== preComputedZkeyCompleteFilename
+                    )
                 }
             }
 
@@ -718,7 +634,7 @@ const setup = async () => {
 
             process.stdout.write(`\n`)
 
-            spinner.text = `Preparing the ceremony data (this may take a while)...`
+            const spinner = customSpinner(`Preparing the ceremony data (this may take a while)...`, `clock`)
             spinner.start()
 
             // Computing file hash (this may take a while).
@@ -760,7 +676,7 @@ const setup = async () => {
             wannaUsePreDownloadedPoT = false
         }
 
-        spinner.text = `Writing ceremony data...`
+        const spinner = customSpinner(`Writing ceremony data...`, `clock`)
         spinner.start()
 
         try {
