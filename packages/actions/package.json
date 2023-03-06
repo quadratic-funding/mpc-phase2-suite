@@ -35,7 +35,7 @@
         "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript",
         "build:watch": "rollup -c rollup.config.ts -w --configPlugin typescript",
         "compile": "hardhat compile",
-        "deploy": "hardhat run scripts/deploy.ts --network hardhat",
+        "deploy:contracts": "hardhat run scripts/deploy.cts --network hardhat",
         "pre:publish": "yarn build",
         "test:contracts": "hardhat test test/unit/verifier.cts",
         "verify:proof": "hardhat run scripts/verifyProof.cts"
