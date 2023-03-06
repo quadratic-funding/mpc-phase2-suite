@@ -398,3 +398,18 @@ export type ParticipantDocumentReferenceAndData = {
     uid: string
     data: ParticipantDocument
 }
+
+/**
+ * Define the SolidityCalldata arguments for the GROTH16 SNARK verifier.
+ * @typedef {Object} SolidityCalldata
+ * @property {string[]} arg1 - the first argument of the verifier.
+ * @property {string[][]} arg2 - the second argument of the verifier.
+ * @property {string[]} arg3 - the third argument of the verifier.
+ * @property {string[]} arg4 - the fourth argument of the verifier.
+ */
+export type SolidityCalldata = {
+    arg1: string[]
+    arg2: string[][]
+    arg3: string[]
+    arg4: string[]
+}

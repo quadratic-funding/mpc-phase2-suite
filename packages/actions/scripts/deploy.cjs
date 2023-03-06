@@ -1,5 +1,5 @@
-import { assert } from "console"
-import { ethers } from "hardhat"
+const { assert } = require("console")
+const { ethers } = require("hardhat")
 
 /**
  * Deploy the Verifier contract

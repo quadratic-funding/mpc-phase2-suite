@@ -1,6 +1,5 @@
-import { HardhatUserConfig } from "hardhat/config"
-import { ethers } from "ethers"
-import "@nomicfoundation/hardhat-toolbox"
+const { ethers } = require("ethers")
+require("@nomicfoundation/hardhat-toolbox")
 
 const WALLET_MNEMONIC =
     process.env.WALLET_MNEMONIC || "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
@@ -13,8 +12,22 @@ const CHAIN_IDS = {
     arbitrumTestnet: 421613
 }
 
-const config: HardhatUserConfig = {
-    defaultNetwork: "hardhat",
+module.exports = {
+    solidity: {
+      version: "0.8.10",
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 200
+        }
+      }
+    },
+    mocha: {
+        timeout: 100000000
+    },
+    paths: {
+        tests: "test"
+    },
     networks: {
         hardhat: {
             gas: GAS_LIMIT,
@@ -30,24 +43,4 @@ const config: HardhatUserConfig = {
             chainId: CHAIN_IDS.arbitrumTestnet
         }
     },
-    paths: {
-        tests: "test"
-    },
-    mocha: {
-        timeout: 100000000
-    },
-    solidity: {
-        version: "0.8.17",
-        settings: {
-            optimizer: {
-                enabled: true,
-                runs: 200,
-                details: {
-                    yul: true
-                }
-            }
-        }
-    }
-}
-
-export default config
+  };
