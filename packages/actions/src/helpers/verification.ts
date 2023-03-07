@@ -1,6 +1,7 @@
 import { groth16, zKey } from "snarkjs"
 import fs from "fs"
 import { utils as ffUtils } from "ffjavascript"
+import { Contract } from "ethers"
 import { SolidityCalldata } from "../types"
 
 /**
@@ -137,7 +138,7 @@ export const exportVerifierAndVKey = async (
  */
 function p256(proofPart: any) {
     let nProofPart = proofPart.toString(16)
-    while (nProofPart.length < 64) nProofPart = `0${  nProofPart}`
+    while (nProofPart.length < 64) nProofPart = `0${nProofPart}`
     nProofPart = `0x${nProofPart}`
     return nProofPart
 }
@@ -175,4 +176,15 @@ export const formatSolidityCalldata = (circuitInput: string[], _proof: any): Sol
             "There was an error while formatting the calldata. Please make sure that you are calling this function with the output of the generateGROTH16Proof function, and then please try again."
         )
     }
+}
+
+/**
+ * Verify a GROTH16 SNARK proof on chain
+ * @param contract <Contract> The contract instance
+ * @param proof <SolidityCalldata> The calldata formatted for Solidity
+ * @returns <Promise<boolean>> Whether the proof is valid or not
+ */
+export const verifyGROTH16ProofOnChain = async (contract: Contract, proof: SolidityCalldata): Promise<boolean> => {
+    const res = await contract.verifyProof(proof.arg1, proof.arg2, proof.arg3, proof.arg4)
+    return res
 }

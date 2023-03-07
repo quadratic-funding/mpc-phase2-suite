@@ -7,6 +7,7 @@ const { ethers } = require("hardhat")
 async function main() {
     const contractFactory = await ethers.getContractFactory("MockVerifier")
     const contract = await contractFactory.deploy()
+    await contract.deployed()
     assert(ethers.utils.isAddress(contract.address), "The contract was not deployed")
 
     console.log(`Contract deployed to ${contract.address}`)

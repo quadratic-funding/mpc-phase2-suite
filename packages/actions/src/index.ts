@@ -30,6 +30,7 @@ export {
     formatSolidityCalldata,
     generateGROTH16Proof,
     verifyGROTH16Proof,
+    verifyGROTH16ProofOnChain,
     verifyZKey
 } from "./helpers/verification"
 export { initializeFirebaseCoreServices } from "./helpers/services"
