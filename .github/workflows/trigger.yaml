@@ -1,5 +1,4 @@
-name: Run Test <Prod>
-run-name: Test Prod
+name: trigger
 
 on:
     pull_request:
