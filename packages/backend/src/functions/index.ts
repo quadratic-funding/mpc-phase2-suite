@@ -1,36 +1,10 @@
 import admin from "firebase-admin"
 
-export { registerAuthUser, processSignUpWithCustomClaims } from "./user"
-export {
-    startCeremony,
-    stopCeremony,
-    setupCeremony,
-    initEmptyWaitingQueueForCircuit,
-    finalizeCeremony
-} from "./ceremony"
-export {
-    checkParticipantForCeremony,
-    progressToNextContributionStep,
-    permanentlyStoreCurrentContributionTimeAndHash,
-    temporaryStoreCurrentContributionMultiPartUploadId,
-    temporaryStoreCurrentContributionUploadedChunkData,
-    progressToNextCircuitForContribution,
-    checkAndPrepareCoordinatorForFinalization
-} from "./participant"
-export {
-    coordinateCeremonyParticipant,
-    verifycontribution,
-    refreshParticipantAfterContributionVerification,
-    finalizeCircuit
-} from "./circuit"
-export {
-    createBucket,
-    checkIfObjectExist,
-    generateGetObjectPreSignedUrl,
-    startMultiPartUpload,
-    generatePreSignedUrlsParts,
-    completeMultiPartUpload
-} from "./storage"
-export { checkAndRemoveBlockingContributor, resumeContributionAfterTimeoutExpiration } from "./timeout"
+export * as user from "./user"
+export * as ceremony from "./ceremony"
+export * as participant from "./participant"
+export * as circuit from "./circuit"
+export * as storage from "./storage"
+export * as timeout from "./timeout"
 
 admin.initializeApp()

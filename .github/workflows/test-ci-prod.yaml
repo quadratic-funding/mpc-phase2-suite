@@ -68,7 +68,7 @@ jobs:
                   npm install -g firebase-tools
 
             - name: deploy to Firebase
-              run: firebase deploy --only functions --project prod
+              run: yarn firebase:deploy-functions
               working-directory: packages/backend
               env:
                   GOOGLE_APPLICATION_CREDENTIALS: ./serviceAccountKey.json
