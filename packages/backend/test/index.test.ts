@@ -3,7 +3,7 @@ import chaiAsPromised from "chai-as-promised"
 import admin from "firebase-admin"
 import firebaseFncTest from "firebase-functions-test"
 // Import the exported function definitions from our functions/index.js file
-import { registerAuthUser } from "../src/functions/index"
+import { user as userFunctions } from "../src/functions/index"
 
 // Config chai.
 chai.use(chaiAsPromised)
@@ -34,7 +34,7 @@ describe("CF Unit Tests", () => {
     })
 
     it("should call an authorized CF and interact with Firestore", async () => {
-        const wrapped = test.wrap(registerAuthUser)
+        const wrapped = test.wrap(userFunctions.registerAuthUser)
 
         // Make a fake user to pass to the function
         const displayName = "UserA"
