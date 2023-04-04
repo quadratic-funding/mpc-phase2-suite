@@ -87,6 +87,9 @@ jobs:
                   git config --global user.email "you@example.com"
                   git config --global user.name "Your Name"
 
+                  # Workaround to not include changes by adding lerna
+                  git reset --hard HEAD
+
                   lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes
                   lerna publish from-git --dist-tag ci --yes
               env:
