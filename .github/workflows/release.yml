@@ -32,6 +32,7 @@ jobs:
             - name: Initialize Project
               run: |
                   yarn install --frozen-lockfile
+                  yarn add --dev lerna
                   yarn build
               env:
                   NODE_OPTIONS: "--max_old_space_size=4096"
