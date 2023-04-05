@@ -26,7 +26,8 @@ import {
     verifyContribution,
     progressToNextCircuitForContribution,
     getPotStorageFilePath,
-    getTranscriptStorageFilePath
+    getTranscriptStorageFilePath,
+    getCircuitsCollectionPath
 } from "../../src"
 import { fakeCeremoniesData, fakeCircuitsData, fakeUsersData } from "../data/samples"
 import {
@@ -235,10 +236,16 @@ describe("Contribution", () => {
             objectsToDelete.push(nextZkeyStoragePath)
 
             // Execute contribution verification.
+            const tempCircuit = await getDocumentById(
+                userFirestore,
+                getCircuitsCollectionPath(ceremonyId),
+                tmpCircuit.uid
+            )
+
             const { valid } = await verifyContribution(
                 userFunctions,
                 ceremonyId,
-                tmpCircuit.uid,
+                tempCircuit,
                 bucketName,
                 users[2].uid,
                 String(process.env.FIREBASE_CF_URL_VERIFY_CONTRIBUTION)

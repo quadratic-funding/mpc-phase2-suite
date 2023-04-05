@@ -619,9 +619,7 @@ export const verifycontribution = functionsV2.https.onCall(
 
         // Step (3).
         return {
-            valid: isContributionValid,
-            fullContributionTime,
-            verifyCloudFunctionTime
+            valid: isContributionValid
         }
     }
 )
