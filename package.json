@@ -27,7 +27,7 @@
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
         "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
         "prettier": "prettier -c .",
-        "prettier:fix": "prettier -w .",
+        "prettier:write": "prettier -w .",
         "precommit": "lint-staged",
         "commit": "cz",
         "prepare": "is-ci || husky install"
